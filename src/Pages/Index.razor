@@ -1,0 +1,85 @@
+﻿@page "/"
+@*<h1>Hello, world!</h1>
+
+    Welcome to your new app.
+
+    <SurveyPrompt Title="How is Blazor working for you?" />*@
+
+<div class="container border rounded mat-elevation-z24">
+    <div class="col text-center">
+        Blazing Dice Roller
+    </div>
+    <div class="row">
+        <div class="col-8">
+            @foreach (var setting in _rollSettings)
+            {
+                <div class="row">
+                    <div class="col-sm-1"><img src="images/d@(setting.MaxValue).png" style="height: 40px; width: 40px;" /></div>
+                    <div class="col-sm">
+                        <MatNumericUpDownField Label="Number of Dice"
+                                               @bind-Value=setting.NumberOfDice
+                                               DecimalPlaces=0
+                                               Minimum=0 Maximum=100>
+                        </MatNumericUpDownField>
+                    </div>
+                    <div class="col-sm">
+                        <MatNumericUpDownField Label="Modifier"
+                                               @bind-Value=setting.Modifier
+                                               DecimalPlaces=0
+                                               Minimum=-100 Maximum=100>
+                        </MatNumericUpDownField>
+                    </div>
+                    <div class="col-sm">
+                        <MatButton @onclick="()=> Roll(setting)">
+                            <span class="oi oi-play-circle"></span>&nbsp; Roll D@(setting.MaxValue)
+                        </MatButton>
+                    </div>
+                    <div class="col-sm">
+                        <MatTextField @bind-Value="setting.LastResult" Label="Result" ReadOnly="true"></MatTextField>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col">
+            <MatTextField @bind-Value="Log" Label="Log" TextArea="true"></MatTextField>
+        </div>
+    </div>
+</div>
+
+@code{
+    private DiceRollSetting[] _rollSettings;
+    private string Log = string.Empty;
+
+    protected override Task OnInitializedAsync()
+    {
+        _rollSettings = new DiceRollSetting[]
+        {
+            new DiceRollSetting{ MaxValue = 4, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 6, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 8, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 10, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 12, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 20, NumberOfDice = 1 ,Modifier = 0},
+            new DiceRollSetting{ MaxValue = 100, NumberOfDice = 1 ,Modifier = 0}
+            };
+
+        return base.OnInitializedAsync();
+    }
+
+    public void Roll(DiceRollSetting setting)
+    {
+        var result = Enumerable.Range(1, setting.NumberOfDice)
+            .Sum(diceIndex =>
+            {
+                var result = new Random().Next(1, setting.MaxValue + 1);
+                Log += $"\nRolled {result} with D{setting.MaxValue} on roll {diceIndex} of {setting.NumberOfDice}";
+                return result;
+            });
+
+        if (setting.Modifier != 0)
+            Log += $"\nAdding modifier of {setting.Modifier}";
+
+        setting.LastResult = result + setting.Modifier;
+
+    }
+}
